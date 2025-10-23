@@ -1,0 +1,40 @@
+{
+  "Comment": "Workflow de Exemplo para Processamento de Dados com AWS Step Functions (Desafio DIO)",
+  "StartAt": "Processar Dados",
+  "States": {
+    "Processar Dados": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:MinhaFuncaoLambda",
+      "Next": "Verificar Status"
+    },
+    "Verificar Status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.status",
+          "StringEquals": "SUCESSO",
+          "Next": "Sucesso na Execução"
+        },
+        {
+          "Variable": "$.status",
+          "StringEquals": "FALHA",
+          "Next": "Notificar Falha"
+        }
+      ],
+      "Default": "Aguardar Processamento"
+    },
+    "Sucesso na Execução": {
+      "Type": "Succeed"
+    },
+    "Notificar Falha": {
+      "Type": "Task",
+      "Resource": "arn:aws:sns:REGION:ACCOUNT_ID:TopicoDeNotificacao",
+      "End": true
+    },
+    "Aguardar Processamento": {
+      "Type": "Wait",
+      "Seconds": 60,
+      "Next": "Processar Dados"
+    }
+  }
+}
