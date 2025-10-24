@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template para criar um S3 Bucket de exemplo para o Desafio DIO.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Configurações do Bucket S3"
+        Parameters:
+          - BucketNameParameter
+
+Parameters:
+  BucketNameParameter:
+    Type: String
+    Description: Nome globalmente único para o S3 Bucket (deve ser em letras minúsculas, sem espaços).
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: "[a-z0-9-]+"
+    ConstraintDescription: Deve conter apenas letras minúsculas, números e hífens.
+
+Resources:
+  MySimpleS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      # O nome do Bucket é pego do Parâmetro de entrada definido acima
+      BucketName: !Ref BucketNameParameter
+      
+      # Define que o acesso público é bloqueado (melhor prática de segurança)
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+        
+      # Define Tags para o recurso (ótimo para organização e controle de custos)
+      Tags:
+        - Key: Environment
+          Value: Development
+        - Key: Project
+          Value: DIO-CloudFormation-Challenge
+        - Key: Owner
+          Value: !Sub '${AWS::StackName}-User'
+
+Outputs:
+  # Exporta o nome do Bucket criado
+  BucketNameOutput:
+    Description: Nome do S3 Bucket criado.
+    Value: !Ref MySimpleS3Bucket
+    
+  # Exporta o ARN (Amazon Resource Name) do Bucket
+  BucketArnOutput:
+    Description: ARN do S3 Bucket criado.
+    Value: !GetAtt MySimpleS3Bucket.Arn
