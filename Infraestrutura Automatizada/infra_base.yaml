@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template básico para provisionamento de uma VPC e recursos de rede essenciais.
+
+# --- PARAMETROS ---
+Parameters:
+  VPCCIDR:
+    Description: Bloco CIDR para a nova VPC.
+    Type: String
+    Default: 10.0.0.0/16
+  PublicSubnetCIDR:
+    Description: Bloco CIDR para a Subnet pública dentro da VPC.
+    Type: String
+    Default: 10.0.1.0/24
+  EnvironmentName:
+    Description: Nome para a Stack e tags de recursos.
+    Type: String
+    Default: Desafio-CloudFormation-DIO
+
+# --- RECURSOS ---
+Resources:
+  # 1. Criação da VPC
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-VPC'
+        - Key: Projeto
+          Value: Desafio-DIO
+
+  # 2. Criação do Internet Gateway
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-IGW'
+
+  # 3. Anexar o Internet Gateway à VPC
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  # 4. Criação da Subnet Pública
+  PublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnetCIDR
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-PublicSubnet'
+
+  # 5. Criação de uma Tabela de Rotas
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-Public-RT'
+
+  # 6. Criação da Rota de Internet (0.0.0.0/0)
+  InternetRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  # 7. Associar a Tabela de Rotas à Subnet
+  SubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  # 8. Criação de um Security Group Básico
+  WebSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Security Group para acesso Web (HTTP/SSH)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0 # Apenas para fins de teste. Idealmente, restrinja isso!
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-WebSG'
+
+# --- SAÍDAS (OUTPUTS) ---
+Outputs:
+  VPCId:
+    Description: O ID da VPC recém-criada.
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${EnvironmentName}-VPCId'
+
+  PublicSubnetId:
+    Description: O ID da Subnet Pública recém-criada.
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub '${EnvironmentName}-PublicSubnetId'
