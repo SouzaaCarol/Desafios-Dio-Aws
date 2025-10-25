@@ -2,7 +2,7 @@
 
 ## 📋 Sobre o Projeto
 
-Este repositório é o entregável do Desafio de Projeto da [DIO - Digital Innovation One] focado na implementação e documentação de uma infraestrutura automatizada utilizando o serviço **AWS CloudFormation**.
+Este repositório é o entregável do Desafio de Projeto da DIO  focado na implementação e documentação de uma infraestrutura automatizada utilizando o serviço **AWS CloudFormation**.
 
 O objetivo principal foi explorar os conceitos de Infraestrutura como Código (IaC), utilizando CloudFormation para provisionar recursos da AWS de forma declarativa, repetível e segura.
 
@@ -26,7 +26,8 @@ Para demonstrar a proficiência em CloudFormation, foi implementada uma infraest
 
 ### ⚙️ Template CloudFormation
 
-O template principal para provisionamento está localizado em `cloudformation/infra_base.yaml`. Este arquivo define a infraestrutura **desejada** no formato YAML.
+O template principal para provisionamento está localizado em `Infraestrutura Automatizada
+/infra_base.yaml`. Este arquivo define a infraestrutura **desejada** no formato YAML.
 
 ### 📄 Parâmetros e Outputs
 
