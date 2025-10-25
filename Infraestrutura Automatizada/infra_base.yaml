@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Template básico para provisionamento de uma VPC e recursos de rede essenciais.
 
-# --- PARAMETROS ---
 Parameters:
   VPCCIDR:
     Description: Bloco CIDR para a nova VPC.
@@ -16,9 +15,8 @@ Parameters:
     Type: String
     Default: Desafio-CloudFormation-DIO
 
-# --- RECURSOS ---
 Resources:
-  # 1. Criação da VPC
+
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
@@ -31,7 +29,6 @@ Resources:
         - Key: Projeto
           Value: Desafio-DIO
 
-  # 2. Criação do Internet Gateway
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
@@ -39,14 +36,12 @@ Resources:
         - Key: Name
           Value: !Sub '${EnvironmentName}-IGW'
 
-  # 3. Anexar o Internet Gateway à VPC
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  # 4. Criação da Subnet Pública
   PublicSubnet:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -57,7 +52,6 @@ Resources:
         - Key: Name
           Value: !Sub '${EnvironmentName}-PublicSubnet'
 
-  # 5. Criação de uma Tabela de Rotas
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -66,7 +60,6 @@ Resources:
         - Key: Name
           Value: !Sub '${EnvironmentName}-Public-RT'
 
-  # 6. Criação da Rota de Internet (0.0.0.0/0)
   InternetRoute:
     Type: 'AWS::EC2::Route'
     DependsOn: AttachGateway
@@ -75,14 +68,12 @@ Resources:
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref InternetGateway
 
-  # 7. Associar a Tabela de Rotas à Subnet
   SubnetRouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       SubnetId: !Ref PublicSubnet
       RouteTableId: !Ref PublicRouteTable
 
-  # 8. Criação de um Security Group Básico
   WebSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -96,12 +87,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0 # Apenas para fins de teste. Idealmente, restrinja isso!
+          CidrIp: 0.0.0.0/0 
       Tags:
         - Key: Name
           Value: !Sub '${EnvironmentName}-WebSG'
 
-# --- SAÍDAS (OUTPUTS) ---
 Outputs:
   VPCId:
     Description: O ID da VPC recém-criada.
