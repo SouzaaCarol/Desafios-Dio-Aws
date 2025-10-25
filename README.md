@@ -1,58 +1,64 @@
-# 🚀 Desafio DIO: Gerenciamento e Arquitetura Serverless/EC2 na AWS
+# ☁️ Repositório de Desafios AWS & Cloud Computing 
 
-Este repositório documenta a experiência prática e os conhecimentos consolidados em serviços-chave da AWS, com foco no Gerenciamento de Instâncias EC2 e na construção de um fluxo de processamento de arquivos.
+Este repositório consolida os desafios práticos de *Cloud Computing* e **DevOps/SRE** realizados na plataforma DIO, com foco em serviços da **Amazon Web Services (AWS)** e na metodologia **Infraestrutura como Código (IaC)**.
 
-## 🎯 Objetivo do Laboratório
+## 🎯 Habilidades e Tecnologias Destacadas
 
-O desafio teve um duplo objetivo:
-1.  **Consolidar** os conhecimentos práticos sobre o ciclo de vida e gerenciamento de uma instância Amazon EC2.
-2.  **Documentar** uma arquitetura de exemplo que utiliza a integração entre **S3, AWS Lambda e EC2** para processamento de arquivos.
-
----
-
-## 🎨 1. Arquitetura Proposta: Fluxo de Processamento de Arquivos
-
-A arquitetura abaixo ilustra um fluxo comum na AWS onde um evento de armazenamento (**S3**) dispara uma função *serverless* (**Lambda**), que, por sua vez, orquestra o trabalho pesado em uma máquina virtual (**EC2**).
-
-*Diagrama de Arquitetura (S3, Lambda, EC2)*
-
-[Insira aqui a imagem da sua arquitetura final (ex: `image_7628c9.png`) usando a sintaxe Markdown: `![Diagrama AWS S3-Lambda-EC2](images/nome_do_seu_arquivo.png)`]
-
-### ➡️ Detalhamento do Fluxo
-
-| Etapa | Serviço(s) | Ação e Conceito |
+| Categoria | Serviço/Tecnologia | Conceitos Aplicados |
 | :---: | :--- | :--- |
-| **1. Input** | S3 (Bucket de Origem) | O fluxo começa com o **Upload de Arquivo**. O Amazon S3 armazena o arquivo de entrada. |
-| **2. Gatilho** | S3 → Lambda | A criação do objeto no Bucket de Origem dispara a **AWS Lambda Function**. Este é um padrão *serverless* de processamento orientado a eventos. |
-| **3. Orquestração** | Lambda → EC2 | A Lambda Function executa o código para **Invocar ou Comandar a Instância EC2**, transferindo o controle da execução. |
-| **4. Processamento** | EC2 | A instância **Amazon EC2 (Instância de Processamento)** realiza a tarefa pesada (Ex: compressão de vídeo, análise de dados complexa). |
-| **5. Output** | EC2 → S3 | Após o processamento, a instância EC2 salva o resultado final no **Amazon S3 (Bucket de Destino/Resultado)**. |
+| **Infraestrutura como Código (IaC)** | **AWS CloudFormation**, YAML | Provisionamento declarativo, Gerenciamento de Stack, Rollback, Funções Intrínsecas (`!Ref`, `!Sub`). |
+| **Serverless & Automação** | **AWS Lambda, Amazon S3** | Arquitetura Orientada a Eventos, Triggers S3, Permissões S3-Lambda, Processamento Assíncrono. |
+| **IaaS & Gerenciamento** | **Amazon EC2, EBS, Security Groups** | Ciclo de Vida da VM (Launch, Stop, Terminate), Volumes EBS e Snapshots, Controle de Tráfego de Rede (Firewall Virtual). |
+| **Redes e Segurança** | **Amazon VPC, IGW, Subnets** | Isolamento de Ambiente, Conectividade à Internet, Segmentação de Redes. |
 
 ---
 
-## ⚙️ 2. Gerenciamento de Instâncias EC2 (Requisito Principal)
+## 📂 Visão Geral dos Projetos (Desafios Práticos)
 
-Para que a **Instância de Processamento EC2** no diagrama funcione, é essencial entender seu gerenciamento e ciclo de vida:
+O repositório está organizado em pastas (ou seções) que refletem os desafios de implementação.
 
-### A. Ciclo de Vida da Instância
+### 1. ⚙️ Infraestrutura como Código (IaC) com CloudFormation
 
-| Ação no Console (ou CLI) | Descrição e Observações |
-| :---: | :--- |
-| **Lançar Instância (Launch)** | Cria a VM, definindo AMI, Tipo de Instância e Chave de Acesso. |
-| **Em Execução (Running)** | A instância está ativa e gerando custos. |
-| **Parar (Stop)** | Desliga a instância, **mantendo o disco (EBS)** e os dados intactos. O custo de computação é interrompido. |
-| **Iniciar (Start)** | Coloca a instância em "Running" novamente. |
-| **Encerrar (Terminate)** | Destrói a instância e, por padrão, o volume EBS. Os dados são perdidos. |
+**Foco:** Provisionamento de componentes de Rede e Base de Infraestrutura de forma declarativa e repetível.
 
-### B. Segurança e Armazenamento
+| Descrição do Projeto | Conceitos Chave | Arquivos de Referência |
+| :--- | :--- | :--- |
+| **Provisionamento de Rede Base** | Criação de **VPC**, **Subnet**, **Internet Gateway (IGW)** e **Security Group (SG)**. | `iac-cloudformation/infra_base.yaml` |
+| **Princípios de IaC** | Natureza Declarativa, Gestão de Parâmetros (`Parameters`) e Exportação de Variáveis (`Outputs`), Rollback Automático. | *[Leia a documentação detalhada na pasta respectiva]* |
 
-* **Security Groups:** Atuam como um firewall virtual, controlando o tráfego de entrada (`inbound`) e saída (`outbound`) da instância.
-* **Volumes EBS:** É o armazenamento de bloco persistente que a EC2 usa como disco rígido. Os dados persistem mesmo quando a instância é parada.
-* **Snapshots de EBS:** Backups incrementais do seu Volume EBS, essenciais para a recuperação de desastres (DR) e migração de dados.
+### 2. ⚡ Automação Serverless (Lambda e S3)
+
+**Foco:** Criação de um pipeline de processamento de dados usando serviços *serverless* e orquestrado via CloudFormation.
+
+| Descrição do Projeto | Conceitos Chave | Arquivos de Referência |
+| :--- | :--- | :--- |
+| **Pipeline S3-Lambda-CFN** | **S3** como gatilho de eventos, **Lambda** para processamento leve (log de metadados). | `serverless-automation/cloudformation-template.yaml` |
+| **Permissões Críticas** | Criação da `IAM Role` com Mínimo Privilégio e a importância da `AWS::Lambda::Permission` para autorizar a invocação do S3. | `serverless-automation/index.py` (Código da Lambda) |
+
+### 3. 🖥️ Gerenciamento e Arquitetura Híbrida (EC2, S3, Lambda)
+
+**Foco:** Entendimento do IaaS (EC2) e sua integração com arquiteturas Serverless para cargas de trabalho de alto consumo de recursos.
+
+| Descrição do Projeto | Conceitos Chave | Arquivos de Referência |
+| :--- | :--- | :--- |
+| **Arquitetura S3-Lambda-EC2** | **Orquestração** onde a Lambda aciona uma **EC2** para *heavy processing* (Ex: Compressão/ETL). | *[Insira a pasta ou o documento de arquitetura]* |
+| **Gerenciamento de EC2** | Demonstração do **Ciclo de Vida** da instância (Stop/Start vs. Terminate) e uso de **Security Groups** e **Volumes EBS**. | *[Insira a pasta ou o documento de gerenciamento]* |
 
 ---
 
-## 🔗 Links e Recursos
+## 💡 Principais Aprendizados Consolidados
 
-* **Documentação Oficial:** [Gerenciando EC2 instâncias da Amazon - Documentação AWS](https://docs.aws.amazon.com/pt_br/ec2/index.html)
-* **Perfil DIO:** [Ana Carolina Martins Souza]
+A execução destes desafios reforçou os seguintes pilares de uma carreira em Cloud e DevOps:
+
+| Pilar | Aprendizado Essencial |
+| :--- | :--- |
+| **IaC** | A fonte única de verdade (Single Source of Truth) para a infraestrutura **sempre** deve ser o template YAML, e não o console da AWS. |
+| **Serverless** | O desenvolvimento *serverless* exige foco no **modelo de permissões (IAM)**, especialmente ao integrar diferentes serviços. |
+| **Segurança** | **Security Groups** são a primeira linha de defesa. O Mínimo Privilégio deve ser aplicado a cada recurso (IAM Roles). |
+| **Resiliência** | A funcionalidade de **Rollback Automático** do CloudFormation é essencial para garantir que falhas no *deployment* não deixem ambientes parcialmente configurados ou inconsistentes. |
+
+## 🔗 Sobre a Autora
+
+* **Nome:** [Ana Carolina Martins Souza]
+* **Perfil DIO:** [Ana Souza]
+* **Contatos:** [(https://www.linkedin.com/in/cmanasouza,carol22022004@gmail.com ]
