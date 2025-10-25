@@ -61,4 +61,4 @@ A execução destes desafios reforçou os seguintes pilares de uma carreira em C
 
 * **Nome:** [Ana Carolina Martins Souza]
 * **Perfil DIO:** [Ana Souza]
-* **Contatos:** [(https://www.linkedin.com/in/cmanasouza,carol22022004@gmail.com ]
+* **Contatos:** [https://www.linkedin.com/in/cmanasouza, carol22022004@gmail.com ]
