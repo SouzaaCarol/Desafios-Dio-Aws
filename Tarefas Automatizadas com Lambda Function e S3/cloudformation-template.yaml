@@ -1,0 +1,89 @@
+# cloudformation-template.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Desafio DIO - Lambda, S3 e CloudFormation
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+[        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub 'arn:aws:s3:::${SourceBucket}/*' 
+  FileProcessorLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: FileProcessorLambdaDIO
+      Runtime: python3.9
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+       
+        ZipFile: |
+          import json
+          import logging
+          import os
+          
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+          
+          def handler(event, context):
+              try:
+                  if 'Records' not in event or not event['Records']:
+                      logger.warning("Evento sem registros S3. Ignorando.")
+                      return {'statusCode': 200, 'body': 'Nenhum registro S3 para processar.'}
+                      
+                  for record in event['Records']:
+                      bucket_name = record['s3']['bucket']['name']
+                      object_key = record['s3']['object']['key']
+                      file_size = record['s3']['object'].get('size', 0)
+                      
+                      log_message = {
+                          "status": "PROCESSADO_SUCESSO",
+                          "bucket": bucket_name,
+                          "chave_objeto": object_key,
+                          "tamanho_bytes": file_size
+                      }
+                      
+                      logger.info(f"--- Processando novo arquivo S3 ---")
+                      logger.info(json.dumps(log_message, indent=2))
+          
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps('Processamento de arquivos S3 concluído com sucesso!')
+                  }
+              except Exception as e:
+                  logger.error(f"Erro no processamento da Lambda: {e}")
+                  raise e
+
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'dio-challenge-lambda-s3-${AWS::AccountId}' 
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt FileProcessorLambda.Arn
+
+  S3InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt FileProcessorLambda.Arn
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !GetAtt SourceBucket.Arn
